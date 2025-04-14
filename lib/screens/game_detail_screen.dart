@@ -613,17 +613,17 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                   const Divider(height: 32),
                   _buildInfoRow(
                     'Total Buy-ins',
-                    '\$${totalBuyIns.toStringAsFixed(2)}',
+                    '${totalBuyIns.toStringAsFixed(2)}',
                     valueColor: AppTheme.secondaryColor,
                   ),
                   _buildInfoRow(
                     'Total Add-ons',
-                    '\$${totalAddOns.toStringAsFixed(2)}',
+                    '${totalAddOns.toStringAsFixed(2)}',
                     valueColor: AppTheme.warningColor,
                   ),
                   _buildInfoRow(
                     'Total End Amounts',
-                    '\$${totalEndAmounts.toStringAsFixed(2)}',
+                    '${totalEndAmounts.toStringAsFixed(2)}',
                     valueColor: AppTheme.primaryColor,
                   ),
                 ],
@@ -752,7 +752,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                             const SizedBox(height: 8),
                             _buildInfoRow(
                               'End Amount:',
-                              '\$${endAmount.toStringAsFixed(2)}',
+                              '${endAmount.toStringAsFixed(2)}',
                               valueColor:
                                   endAmount >= 0
                                       ? AppTheme.primaryColor
@@ -760,13 +760,13 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                             ),
                             _buildInfoRow(
                               'Total Buy-ins:',
-                              '-\$${buyInTotal.toStringAsFixed(2)}',
+                              '${buyInTotal.toStringAsFixed(2)}',
                               valueColor: AppTheme.secondaryColor,
                             ),
                             const Divider(),
                             _buildInfoRow(
                               'Net Profit:',
-                              '\$${netProfit.toStringAsFixed(2)}',
+                              '${netProfit.toStringAsFixed(2)}',
                               valueColor:
                                   netProfit >= 0
                                       ? AppTheme.successColor
