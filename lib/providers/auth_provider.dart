@@ -95,9 +95,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: response.user,
       );
     } catch (e) {
+      // Extract clean error message without the Exception prefix
+      String errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring('Exception: '.length);
+      }
+      
       state = state.copyWith(
         isLoading: false,
-        error: 'Login failed: ${e.toString()}',
+        error: errorMessage,
       );
     }
   }
