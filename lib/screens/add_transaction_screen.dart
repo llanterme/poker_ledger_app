@@ -319,7 +319,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                     : 'Enter amount in dollars',
                 controller: _amountController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                prefixIcon: Icons.attach_money,
+                prefixIcon: Icons.payments_outlined,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter an amount';
