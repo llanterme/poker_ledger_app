@@ -522,14 +522,22 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     final game = gameState.game!;
     final summary = gameState.summary;
 
-    // Calculate total buy-ins and total end amounts
+    // Calculate total buy-ins, add-ons, and total end amounts
     double totalBuyIns = 0;
+    double totalAddOns = 0;
     double totalEndAmounts = 0;
 
-    userTotals.forEach((userId, totals) {
-      totalBuyIns += totals['buyInTotal'] ?? 0;
-      totalEndAmounts += totals['endAmount'] ?? 0;
-    });
+    // Calculate totals from transactions
+    final transactionsState = ref.read(gameTransactionsProvider);
+    for (var transaction in transactionsState.transactions) {
+      if (transaction.type == TransactionType.buyIn) {
+        totalBuyIns += transaction.amount;
+      } else if (transaction.type == TransactionType.addOn) {
+        totalAddOns += transaction.amount;
+      } else if (transaction.type == TransactionType.gameEndAmount) {
+        totalEndAmounts += transaction.amount;
+      }
+    }
 
     // Format dates
     final dateFormat = DateFormat('MMM d, yyyy • h:mm a');
@@ -594,7 +602,10 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                       'Closed',
                       dateFormat.format(summary!.closedAt!),
                     ),
-                  _buildInfoRow('Created By', 'User #${game.createdBy}'),
+                  _buildInfoRow(
+                    'Created By',
+                    game.createdByName ?? 'User #${game.createdBy}',
+                  ),
                   _buildInfoRow(
                     'Players',
                     '${gameUsersState.gameUsers.length}',
@@ -602,21 +613,18 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                   const Divider(height: 32),
                   _buildInfoRow(
                     'Total Buy-ins',
-                    '${totalBuyIns.toStringAsFixed(2)}',
+                    '\$${totalBuyIns.toStringAsFixed(2)}',
                     valueColor: AppTheme.secondaryColor,
                   ),
                   _buildInfoRow(
-                    'Total End Amounts',
-                    '${totalEndAmounts.toStringAsFixed(2)}',
-                    valueColor: AppTheme.primaryColor,
+                    'Total Add-ons',
+                    '\$${totalAddOns.toStringAsFixed(2)}',
+                    valueColor: AppTheme.warningColor,
                   ),
                   _buildInfoRow(
-                    'Difference',
-                    '${(totalEndAmounts - totalBuyIns).toStringAsFixed(2)}',
-                    valueColor:
-                        totalEndAmounts >= totalBuyIns
-                            ? AppTheme.successColor
-                            : AppTheme.errorColor,
+                    'Total End Amounts',
+                    '\$${totalEndAmounts.toStringAsFixed(2)}',
+                    valueColor: AppTheme.primaryColor,
                   ),
                 ],
               ),
@@ -653,7 +661,10 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
               final endAmount = totals['endAmount'] ?? 0.0;
               final netProfit = totals['netProfit'] ?? 0.0;
 
-              final hasEndAmount = endAmount > 0;
+              // Check if this user has an end amount transaction recorded (not just positive values)
+              final hasEndAmount =
+                  totals.containsKey('endAmount') &&
+                  totals['endAmount'] != null;
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
