@@ -71,11 +71,19 @@ class ApiService {
   }
 
   // User Registration
-  Future<User> createUser(User user) async {
+  Future<User> createUser(User user, {int? clubId}) async {
     try {
+      // Create a map from the user object
+      final userData = user.toJson();
+      
+      // Add clubId if provided
+      if (clubId != null) {
+        userData['clubId'] = clubId;
+      }
+      
       final response = await _dio.post(
         '$_baseUrl/users',
-        data: user.toJson(),
+        data: userData,
       );
 
       if (response.data == null) {

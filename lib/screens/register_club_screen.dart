@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:poker_ledger/models/user.dart';
+import 'package:poker_ledger/providers/auth_provider.dart';
 import 'package:poker_ledger/providers/club_provider.dart';
 import 'package:poker_ledger/screens/home_screen.dart';
 import 'package:poker_ledger/theme/app_theme.dart';
@@ -46,6 +47,12 @@ class _RegisterClubScreenState extends ConsumerState<RegisterClubScreen> {
           _clubNameController.text.trim(),
           userId,
         );
+        
+        // Update the user to ensure they are marked as an admin
+        if (widget.newUser != null) {
+          final updatedUser = widget.newUser!.copyWith(isAdmin: true);
+          await ref.read(authStateProvider.notifier).updateUser(updatedUser);
+        }
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

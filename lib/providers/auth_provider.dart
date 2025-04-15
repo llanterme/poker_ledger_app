@@ -122,6 +122,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
     }
   }
+  
+  // Update the current user
+  Future<void> updateUser(User updatedUser) async {
+    try {
+      // Save updated user to secure storage
+      await _authService.saveUser(updatedUser);
+      
+      // Update state with the new user
+      state = state.copyWith(
+        user: updatedUser,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        error: 'Failed to update user: ${e.toString()}',
+      );
+    }
+  }
 
   bool get isAdmin => state.user?.isAdmin ?? false;
 }
