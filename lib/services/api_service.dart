@@ -10,7 +10,7 @@ import 'package:poker_ledger/services/auth_service.dart';
 
 class ApiService {
   final Dio _dio = Dio();
-  final String _baseUrl = 'https://peaceful-eft-amazingly.ngrok-free.app/api';
+  final String _baseUrl = 'http://localhost:8080/api';
 
   ApiService(AuthService authService) {}
 
