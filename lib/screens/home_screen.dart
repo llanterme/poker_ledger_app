@@ -245,7 +245,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Created by: User #${game.createdBy}',
+                            'Created by: ${game.createdByName ?? 'User #${game.createdBy}'}',
                             style: AppTheme.bodyMedium,
                           ),
                         ],

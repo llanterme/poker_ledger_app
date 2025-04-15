@@ -40,7 +40,32 @@ class ApiService {
       return AuthResponse(user: user);
     } catch (e) {
       debugPrint('Login error: $e');
-      rethrow;
+
+      // Extract clean error message from DioException
+      if (e is DioException) {
+        debugPrint('DioException response: ${e.response?.data}');
+
+        if (e.response != null && e.response!.data != null) {
+          // The response data is already a Map with the error details
+          final errorData = e.response!.data;
+
+          if (errorData is Map && errorData.containsKey('message')) {
+            // Extract the message directly from the response
+            throw Exception(errorData['message']);
+          } else {
+            // Fallback if message field is not found
+            throw Exception('Login failed. Please try again.');
+          }
+        } else {
+          // No response data available (likely a network error)
+          throw Exception(
+            'Login failed. Please check your connection and try again.',
+          );
+        }
+      }
+
+      // For other types of errors
+      throw Exception('An unexpected error occurred. Please try again.');
     }
   }
 

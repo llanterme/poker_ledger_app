@@ -9,10 +9,11 @@ part of 'game.dart';
 Game _$GameFromJson(Map<String, dynamic> json) => Game(
   id: (json['id'] as num?)?.toInt(),
   createdBy: (json['createdBy'] as num).toInt(),
+  createdByName: json['createdByName'] as String?,
   createdAt:
-      json['createdAt'] == null
+      json['createdOn'] == null
           ? null
-          : DateTime.parse(json['createdAt'] as String),
+          : DateTime.parse(json['createdOn'] as String),
   status:
       $enumDecodeNullable(_$GameStatusEnumMap, json['status']) ??
       GameStatus.open,
@@ -21,7 +22,8 @@ Game _$GameFromJson(Map<String, dynamic> json) => Game(
 Map<String, dynamic> _$GameToJson(Game instance) => <String, dynamic>{
   'id': instance.id,
   'createdBy': instance.createdBy,
-  'createdAt': instance.createdAt?.toIso8601String(),
+  'createdByName': instance.createdByName,
+  'createdOn': instance.createdAt?.toIso8601String(),
   'status': _$GameStatusEnumMap[instance.status]!,
 };
 
