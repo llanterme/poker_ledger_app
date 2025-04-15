@@ -11,7 +11,6 @@ class User extends Equatable {
   final String email;
   final bool isAdmin;
   
-  @JsonKey(includeFromJson: false, includeToJson: false)
   final String? password;
 
   const User({
@@ -27,7 +26,13 @@ class User extends Equatable {
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
   
-  Map<String, dynamic> toJson() => _$UserToJson(this);
+  Map<String, dynamic> toJson() {
+    final json = _$UserToJson(this);
+    if (password != null) {
+      json['password'] = password;
+    }
+    return json;
+  }
   
   User copyWith({
     int? id,

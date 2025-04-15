@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:poker_ledger/models/auth.dart';
+import 'package:poker_ledger/models/club.dart';
 import 'package:poker_ledger/models/game.dart';
 import 'package:poker_ledger/models/game_summary.dart';
 import 'package:poker_ledger/models/game_user.dart';
@@ -69,6 +70,66 @@ class ApiService {
     }
   }
 
+  // User Registration
+  Future<User> createUser(User user) async {
+    try {
+      final response = await _dio.post(
+        '$_baseUrl/users',
+        data: user.toJson(),
+      );
+
+      if (response.data == null) {
+        throw Exception('Invalid response from server');
+      }
+
+      return User.fromJson(response.data);
+    } catch (e) {
+      _handleApiError(e, 'Failed to create user');
+      rethrow;
+    }
+  }
+
+  // Club Registration
+  Future<Club> createClub(String clubName, int creatorUserId) async {
+    try {
+      final response = await _dio.post(
+        '$_baseUrl/clubs',
+        queryParameters: {'creatorUserId': creatorUserId},
+        data: {'clubName': clubName},
+      );
+
+      if (response.data == null) {
+        throw Exception('Invalid response from server');
+      }
+
+      return Club.fromJson(response.data);
+    } catch (e) {
+      _handleApiError(e, 'Failed to create club');
+      rethrow;
+    }
+  }
+
+  // Helper method to handle API errors consistently
+  void _handleApiError(dynamic e, String fallbackMessage) {
+    debugPrint('API error: $e');
+    
+    if (e is DioException) {
+      debugPrint('DioException response: ${e.response?.data}');
+      
+      if (e.response != null && e.response!.data != null) {
+        final errorData = e.response!.data;
+        
+        if (errorData is Map && errorData.containsKey('message')) {
+          throw Exception(errorData['message']);
+        }
+      }
+      
+      throw Exception('$fallbackMessage. Please check your connection and try again.');
+    }
+    
+    throw Exception('$fallbackMessage. An unexpected error occurred.');
+  }
+
   // Users
   Future<List<User>> getAllUsers() async {
     try {
@@ -92,7 +153,7 @@ class ApiService {
     }
   }
 
-  Future<User> createUser(User user) async {
+  Future<User> registerUserLegacy(User user) async {
     try {
       final response = await _dio.post('$_baseUrl/users', data: user.toJson());
       return User.fromJson(response.data);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:poker_ledger/providers/auth_provider.dart';
 import 'package:poker_ledger/screens/home_screen.dart';
+import 'package:poker_ledger/screens/register_user_screen.dart';
 import 'package:poker_ledger/theme/app_theme.dart';
 import 'package:poker_ledger/widgets/custom_button.dart';
 import 'package:poker_ledger/widgets/custom_text_field.dart';
@@ -248,6 +249,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           color: AppTheme.secondaryColor,
                           decoration: TextDecoration.underline,
                         ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    // Register a New Club link
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => const RegisterUserScreen()),
+                        );
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.add_business,
+                            color: AppTheme.accentColor,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Register a New Club',
+                            style: AppTheme.bodyLarge.copyWith(
+                              color: AppTheme.accentColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
