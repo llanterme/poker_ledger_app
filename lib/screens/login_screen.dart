@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:poker_ledger/models/auth.dart';
 import 'package:poker_ledger/providers/auth_provider.dart';
+import 'package:poker_ledger/screens/club_selection_screen.dart';
 import 'package:poker_ledger/screens/home_screen.dart';
 import 'package:poker_ledger/screens/register_user_screen.dart';
 import 'package:poker_ledger/theme/app_theme.dart';
@@ -36,10 +38,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      await ref.read(authStateProvider.notifier).login(
-            _emailController.text.trim(),
-            _passwordController.text,
+      try {
+        final AuthResponse response = await ref.read(authStateProvider.notifier).login(
+              _emailController.text.trim(),
+              _passwordController.text,
+            );
+        
+        if (mounted && response.clubs.isNotEmpty) {
+          // Navigate to club selection screen
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => ClubSelectionScreen(clubs: response.clubs),
+            ),
           );
+        }
+      } catch (e) {
+        // Error is already handled in the auth notifier
+      }
     }
   }
 
@@ -47,8 +62,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
     
-    // Redirect to home if authenticated
-    if (authState.isAuthenticated) {
+    // Redirect to club selection if authenticated and has clubs
+    if (authState.isAuthenticated && authState.clubs.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => ClubSelectionScreen(clubs: authState.clubs),
+          ),
+        );
+      });
+    } 
+    // Redirect to home if authenticated but no clubs (fallback)
+    else if (authState.isAuthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const HomeScreen()),

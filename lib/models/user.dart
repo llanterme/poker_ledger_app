@@ -10,6 +10,7 @@ class User extends Equatable {
   final String lastName;
   final String email;
   final bool isAdmin;
+  final bool isClubOwner;
   
   final String? password;
 
@@ -19,12 +20,21 @@ class User extends Equatable {
     required this.lastName,
     required this.email,
     required this.isAdmin,
+    this.isClubOwner = false,
     this.password,
   });
 
   String get fullName => '$firstName $lastName';
 
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+  factory User.fromJson(Map<String, dynamic> json) => User(
+  id: json['id'] as int?,
+  firstName: json['firstName'] as String? ?? '',
+  lastName: json['lastName'] as String? ?? '',
+  email: json['email'] as String? ?? '',
+  isAdmin: json['isAdmin'] as bool? ?? false,
+  isClubOwner: json['isClubOwner'] as bool? ?? false,
+  password: json['password'] as String?,
+);
   
   Map<String, dynamic> toJson() {
     final json = _$UserToJson(this);
@@ -40,6 +50,7 @@ class User extends Equatable {
     String? lastName,
     String? email,
     bool? isAdmin,
+    bool? isClubOwner,
     String? password,
   }) {
     return User(
@@ -48,10 +59,11 @@ class User extends Equatable {
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
       isAdmin: isAdmin ?? this.isAdmin,
+      isClubOwner: isClubOwner ?? this.isClubOwner,
       password: password ?? this.password,
     );
   }
   
   @override
-  List<Object?> get props => [id, firstName, lastName, email, isAdmin];
+  List<Object?> get props => [id, firstName, lastName, email, isAdmin, isClubOwner];
 }

@@ -31,7 +31,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     // Load games when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(gamesProvider.notifier).loadGames();
+      final clubState = ref.read(clubStateProvider);
+      if (clubState.currentClub != null) {
+        ref.read(gamesProvider.notifier).loadGames(clubId: clubState.currentClub!.id);
+      } else {
+        // If no club is selected, try to load clubs first
+        ref.read(clubStateProvider.notifier).loadClubs().then((_) {
+          final updatedClubState = ref.read(clubStateProvider);
+          if (updatedClubState.currentClub != null) {
+            ref.read(gamesProvider.notifier).loadGames(clubId: updatedClubState.currentClub!.id);
+          }
+        });
+      }
     });
   }
 

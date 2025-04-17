@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:poker_ledger/models/user.dart';
+import 'package:poker_ledger/models/user_club.dart';
 
 part 'auth.g.dart';
 
@@ -25,9 +26,13 @@ class LoginRequest extends Equatable {
 @JsonSerializable()
 class AuthResponse extends Equatable {
   final User user;
+  final List<UserClub> clubs;
+  final String? message;
 
   const AuthResponse({
     required this.user,
+    this.clubs = const [],
+    this.message,
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) => _$AuthResponseFromJson(json);
@@ -35,5 +40,5 @@ class AuthResponse extends Equatable {
   Map<String, dynamic> toJson() => _$AuthResponseToJson(this);
   
   @override
-  List<Object?> get props => [user];
+  List<Object?> get props => [user, clubs, message];
 }

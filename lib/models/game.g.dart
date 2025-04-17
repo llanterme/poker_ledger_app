@@ -9,6 +9,7 @@ part of 'game.dart';
 Game _$GameFromJson(Map<String, dynamic> json) => Game(
   id: (json['id'] as num?)?.toInt(),
   createdBy: (json['createdBy'] as num).toInt(),
+  clubId: (json['clubId'] as num).toInt(),
   createdByName: json['createdByName'] as String?,
   createdAt:
       json['createdOn'] == null
@@ -22,6 +23,7 @@ Game _$GameFromJson(Map<String, dynamic> json) => Game(
 Map<String, dynamic> _$GameToJson(Game instance) => <String, dynamic>{
   'id': instance.id,
   'createdBy': instance.createdBy,
+  'clubId': instance.clubId,
   'createdByName': instance.createdByName,
   'createdOn': instance.createdAt?.toIso8601String(),
   'status': _$GameStatusEnumMap[instance.status]!,

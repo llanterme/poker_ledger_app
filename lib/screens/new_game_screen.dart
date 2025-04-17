@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:poker_ledger/models/game.dart';
 import 'package:poker_ledger/providers/auth_provider.dart';
+import 'package:poker_ledger/providers/club_provider.dart';
 import 'package:poker_ledger/providers/game_provider.dart';
 import 'package:poker_ledger/screens/game_detail_screen.dart';
 import 'package:poker_ledger/theme/app_theme.dart';
@@ -22,10 +23,22 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
 
   Future<void> _createGame() async {
     final authState = ref.read(authStateProvider);
+    final clubState = ref.read(clubStateProvider);
+
     if (authState.user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('You must be logged in to create a game'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+      return;
+    }
+
+    if (clubState.currentClub == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You must select a club to create a game'),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -37,9 +50,9 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
     });
 
     try {
-      final createdGame = await ref.read(gamesProvider.notifier).createGame(
-            authState.user!.id!,
-          );
+      final createdGame = await ref
+          .read(gamesProvider.notifier)
+          .createGame(authState.user!.id!, clubState.currentClub!.id!);
 
       if (createdGame != null) {
         setState(() {
@@ -91,9 +104,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create New Game'),
-      ),
+      appBar: AppBar(title: const Text('Create New Game')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -233,12 +244,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
             size: 16,
           ),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: AppTheme.bodyMedium,
-            ),
-          ),
+          Expanded(child: Text(text, style: AppTheme.bodyMedium)),
         ],
       ),
     );

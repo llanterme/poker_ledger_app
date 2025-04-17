@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:poker_ledger/models/auth.dart';
 import 'package:poker_ledger/models/user.dart';
+import 'package:poker_ledger/models/user_club.dart';
 import 'package:poker_ledger/services/api_service.dart';
 import 'package:poker_ledger/services/auth_service.dart';
 
@@ -28,12 +29,14 @@ class AuthState {
   final User? user;
   final String? error;
   final bool isAuthenticated;
+  final List<UserClub> clubs;
 
   AuthState({
     this.isLoading = false,
     this.user,
     this.error,
     this.isAuthenticated = false,
+    this.clubs = const [],
   });
 
   AuthState copyWith({
@@ -41,12 +44,14 @@ class AuthState {
     User? user,
     String? error,
     bool? isAuthenticated,
+    List<UserClub>? clubs,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
       user: user ?? this.user,
       error: error != null ? error : null, // Clear error if new error is provided
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      clubs: clubs ?? this.clubs,
     );
   }
 }
@@ -80,7 +85,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> login(String email, String password) async {
+  Future<AuthResponse> login(String email, String password) async {
     state = state.copyWith(isLoading: true, error: '');
     
     try {
@@ -93,7 +98,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoading: false,
         isAuthenticated: true,
         user: response.user,
+        clubs: response.clubs,
       );
+      
+      return response;
     } catch (e) {
       // Extract clean error message without the Exception prefix
       String errorMessage = e.toString();
@@ -105,6 +113,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoading: false,
         error: errorMessage,
       );
+      rethrow;
     }
   }
 
