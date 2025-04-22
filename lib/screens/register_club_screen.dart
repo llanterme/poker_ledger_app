@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:poker_ledger/models/user.dart';
+import 'package:poker_ledger/models/user_club.dart';
 import 'package:poker_ledger/providers/auth_provider.dart';
 import 'package:poker_ledger/providers/club_provider.dart';
 import 'package:poker_ledger/screens/home_screen.dart';
@@ -37,6 +38,7 @@ class _RegisterClubScreenState extends ConsumerState<RegisterClubScreen> {
       try {
         // Create club using the newly registered user's ID
         final clubProvider = ref.read(clubStateProvider.notifier);
+        final authNotifier = ref.read(authStateProvider.notifier);
         final userId = widget.newUser?.id;
 
         if (userId == null) {
@@ -48,11 +50,20 @@ class _RegisterClubScreenState extends ConsumerState<RegisterClubScreen> {
           userId,
         );
 
-        // Update the user to ensure they are marked as an admin
-        if (widget.newUser != null) {
-          final updatedUser = widget.newUser!.copyWith(isAdmin: true);
-          await ref.read(authStateProvider.notifier).updateUser(updatedUser);
-        }
+        // Add this new club to the user's club list with admin privileges
+        final authState = ref.read(authStateProvider);
+        final userClub = UserClub(
+          id: club.id!,
+          clubName: club.clubName,
+          isAdmin: true, // Creator is always an admin
+          isClubOwner: true, // Creator is always the owner
+        );
+
+        // Update the clubs list with the new club
+        final updatedClubs = [...authState.clubs, userClub];
+
+        // Update the auth state with the updated clubs list
+        await authNotifier.updateClubsList(updatedClubs);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

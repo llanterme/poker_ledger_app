@@ -148,6 +148,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
     }
   }
+  
+  // Update the clubs list in the auth state
+  Future<void> updateClubsList(List<UserClub> clubs) async {
+    try {
+      // Update state with the new clubs list and ensure isAuthenticated is set to true
+      state = state.copyWith(
+        clubs: clubs,
+        isAuthenticated: true, // Ensure user is marked as authenticated
+      );
+    } catch (e) {
+      state = state.copyWith(
+        error: 'Failed to update clubs list: ${e.toString()}',
+      );
+    }
+  }
 
   bool get isAdmin => state.user?.isAdmin ?? false;
 }
