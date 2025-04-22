@@ -39,11 +39,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       try {
-        final AuthResponse response = await ref.read(authStateProvider.notifier).login(
-              _emailController.text.trim(),
-              _passwordController.text,
-            );
-        
+        final AuthResponse response = await ref
+            .read(authStateProvider.notifier)
+            .login(_emailController.text.trim(), _passwordController.text);
+
         if (mounted && response.clubs.isNotEmpty) {
           // Navigate to club selection screen
           Navigator.of(context).pushReplacement(
@@ -61,7 +60,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
-    
+
     // Redirect to club selection if authenticated and has clubs
     if (authState.isAuthenticated && authState.clubs.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -71,7 +70,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         );
       });
-    } 
+    }
     // Redirect to home if authenticated but no clubs (fallback)
     else if (authState.isAuthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -87,11 +86,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF121212),
-              Color(0xFF1E1E1E),
-              Color(0xFF2C2C2C),
-            ],
+            colors: [Color(0xFF121212), Color(0xFF1E1E1E), Color(0xFF2C2C2C)],
           ),
         ),
         child: SafeArea(
@@ -146,7 +141,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       totalRepeatCount: 1,
                     ),
                     const SizedBox(height: 48),
-                    
+
                     // Admin Login Form
                     Container(
                       padding: const EdgeInsets.all(24),
@@ -164,10 +159,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Admin Login',
-                            style: AppTheme.titleLarge,
-                          ),
+                          Text('Admin Login', style: AppTheme.titleLarge),
                           const SizedBox(height: 8),
                           Text(
                             'Only admin users can log in to manage games',
@@ -176,7 +168,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          
+
                           // Email Field
                           CustomTextField(
                             label: 'Email',
@@ -188,14 +180,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your email';
                               }
-                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                              if (!RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              ).hasMatch(value)) {
                                 return 'Please enter a valid email';
                               }
                               return null;
                             },
                           ),
                           const SizedBox(height: 16),
-                          
+
                           // Password Field
                           CustomTextField(
                             label: 'Password',
@@ -203,9 +197,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             controller: _passwordController,
                             obscureText: !_isPasswordVisible,
                             prefixIcon: Icons.lock,
-                            suffixIcon: _isPasswordVisible
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                            suffixIcon:
+                                _isPasswordVisible
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                             onSuffixIconPressed: _togglePasswordVisibility,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -215,7 +210,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             },
                           ),
                           const SizedBox(height: 24),
-                          
+
                           // Error Message
                           if (authState.error != null) ...[
                             Container(
@@ -247,7 +242,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             const SizedBox(height: 16),
                           ],
-                          
+
                           // Login Button
                           CustomButton(
                             text: 'LOGIN',
@@ -259,30 +254,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    
-                    // Non-admin access
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (context) => const HomeScreen()),
-                        );
-                      },
-                      child: Text(
-                        'Continue as non-admin user (read-only)',
-                        style: AppTheme.bodyLarge.copyWith(
-                          color: AppTheme.secondaryColor,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                    
+
                     const SizedBox(height: 16),
                     // Register a New Club link
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) => const RegisterUserScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterUserScreen(),
+                          ),
                         );
                       },
                       child: Row(

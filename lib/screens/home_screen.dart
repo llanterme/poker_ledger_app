@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:poker_ledger/models/game.dart';
+import 'package:poker_ledger/models/user_club.dart';
 import 'package:poker_ledger/providers/auth_provider.dart';
 import 'package:poker_ledger/providers/club_provider.dart';
 import 'package:poker_ledger/providers/game_provider.dart';
@@ -189,7 +190,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
     final gamesState = ref.watch(gamesProvider);
-    final isAdmin = authState.user?.isAdmin ?? false;
+    final clubState = ref.watch(clubStateProvider);
+    
+    // Check if the user is an admin for the current club instead of using global isAdmin
+    bool isAdmin = false;
+    if (clubState.currentClub != null && authState.clubs.isNotEmpty) {
+      // Find the current club in the user's clubs list to check admin status
+      final currentClubId = clubState.currentClub!.id;
+      final userClub = authState.clubs.firstWhere(
+        (club) => club.id == currentClubId,
+        orElse: () => UserClub(id: -1, clubName: '', isAdmin: false, isClubOwner: false),
+      );
+      
+      // User is admin if they are either an admin or the club owner
+      isAdmin = userClub.isAdmin || userClub.isClubOwner;
+    }
 
     final openGames =
         gamesState.games

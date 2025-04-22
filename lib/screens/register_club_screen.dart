@@ -38,16 +38,16 @@ class _RegisterClubScreenState extends ConsumerState<RegisterClubScreen> {
         // Create club using the newly registered user's ID
         final clubProvider = ref.read(clubStateProvider.notifier);
         final userId = widget.newUser?.id;
-        
+
         if (userId == null) {
           throw Exception('User ID is required to create a club');
         }
-        
+
         final club = await clubProvider.createClub(
           _clubNameController.text.trim(),
           userId,
         );
-        
+
         // Update the user to ensure they are marked as an admin
         if (widget.newUser != null) {
           final updatedUser = widget.newUser!.copyWith(isAdmin: true);
@@ -90,19 +90,13 @@ class _RegisterClubScreenState extends ConsumerState<RegisterClubScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Your Club'),
-      ),
+      appBar: AppBar(title: const Text('Create Your Club')),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF121212),
-              Color(0xFF1E1E1E),
-              Color(0xFF2C2C2C),
-            ],
+            colors: [Color(0xFF121212), Color(0xFF1E1E1E), Color(0xFF2C2C2C)],
           ),
         ),
         child: SafeArea(
@@ -152,7 +146,7 @@ class _RegisterClubScreenState extends ConsumerState<RegisterClubScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Club Name Field
                     CustomTextField(
                       label: 'Club Name',
@@ -167,7 +161,7 @@ class _RegisterClubScreenState extends ConsumerState<RegisterClubScreen> {
                       },
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Create Club Button
                     CustomButton(
                       text: 'CREATE CLUB',
@@ -175,23 +169,6 @@ class _RegisterClubScreenState extends ConsumerState<RegisterClubScreen> {
                       isLoading: _isRegistering,
                       gradient: AppTheme.primaryGradient,
                       icon: Icons.add_business,
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => const HomeScreen()),
-                          (route) => false,
-                        );
-                      },
-                      child: Text(
-                        'Skip for now',
-                        style: AppTheme.bodyLarge.copyWith(
-                          color: AppTheme.secondaryColor,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
                     ),
                   ],
                 ),

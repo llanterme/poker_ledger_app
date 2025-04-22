@@ -25,6 +25,13 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
   bool _isConfirmPasswordVisible = false;
   bool _isRegistering = false;
 
+  // Login form controllers
+  final _loginFormKey = GlobalKey<FormState>();
+  final _loginEmailController = TextEditingController();
+  final _loginPasswordController = TextEditingController();
+  bool _isLoginPasswordVisible = false;
+  bool _isLoggingIn = false;
+
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -32,6 +39,8 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _loginEmailController.dispose();
+    _loginPasswordController.dispose();
     super.dispose();
   }
 
@@ -44,6 +53,12 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
   void _toggleConfirmPasswordVisibility() {
     setState(() {
       _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+    });
+  }
+
+  void _toggleLoginPasswordVisibility() {
+    setState(() {
+      _isLoginPasswordVisible = !_isLoginPasswordVisible;
     });
   }
 
@@ -103,19 +118,13 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Register'),
-      ),
+      appBar: AppBar(title: const Text('Register')),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF121212),
-              Color(0xFF1E1E1E),
-              Color(0xFF2C2C2C),
-            ],
+            colors: [Color(0xFF121212), Color(0xFF1E1E1E), Color(0xFF2C2C2C)],
           ),
         ),
         child: SafeArea(
@@ -165,7 +174,7 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // First Name Field
                     CustomTextField(
                       label: 'First Name',
@@ -180,7 +189,7 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Last Name Field
                     CustomTextField(
                       label: 'Last Name',
@@ -195,7 +204,7 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Email Field
                     CustomTextField(
                       label: 'Email',
@@ -207,14 +216,16 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                        if (!RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        ).hasMatch(value)) {
                           return 'Please enter a valid email address';
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Password Field
                     CustomTextField(
                       label: 'Password',
@@ -222,9 +233,10 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
                       controller: _passwordController,
                       obscureText: !_isPasswordVisible,
                       prefixIcon: Icons.lock,
-                      suffixIcon: _isPasswordVisible
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+                      suffixIcon:
+                          _isPasswordVisible
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                       onSuffixIconPressed: _togglePasswordVisibility,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -237,7 +249,7 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Confirm Password Field
                     CustomTextField(
                       label: 'Confirm Password',
@@ -245,9 +257,10 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
                       controller: _confirmPasswordController,
                       obscureText: !_isConfirmPasswordVisible,
                       prefixIcon: Icons.lock_outline,
-                      suffixIcon: _isConfirmPasswordVisible
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+                      suffixIcon:
+                          _isConfirmPasswordVisible
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                       onSuffixIconPressed: _toggleConfirmPasswordVisibility,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -260,7 +273,7 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
                       },
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Register Button
                     CustomButton(
                       text: 'REGISTER',
@@ -269,11 +282,11 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
                       gradient: AppTheme.primaryGradient,
                       icon: Icons.app_registration,
                     ),
-                    
+
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        _showLoginDialog(context);
                       },
                       child: Text(
                         'Already have an account? Login',
@@ -291,5 +304,161 @@ class _RegisterUserScreenState extends ConsumerState<RegisterUserScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _showLoginDialog(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1E1E1E),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Text(
+                'Login to Create Club',
+                style: AppTheme.headlineMedium.copyWith(color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: _loginFormKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Email Field
+                      CustomTextField(
+                        label: 'Email',
+                        hint: 'Enter your email address',
+                        controller: _loginEmailController,
+                        keyboardType: TextInputType.emailAddress,
+                        prefixIcon: Icons.email,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          if (!RegExp(
+                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                          ).hasMatch(value)) {
+                            return 'Please enter a valid email address';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Password Field
+                      CustomTextField(
+                        label: 'Password',
+                        hint: 'Enter your password',
+                        controller: _loginPasswordController,
+                        obscureText: !_isLoginPasswordVisible,
+                        prefixIcon: Icons.lock,
+                        suffixIcon:
+                            _isLoginPasswordVisible
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                        onSuffixIconPressed: () {
+                          _toggleLoginPasswordVisibility();
+                          setDialogState(() {});
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'Cancel',
+                    style: AppTheme.bodyLarge.copyWith(color: Colors.grey),
+                  ),
+                ),
+                CustomButton(
+                  text: 'LOGIN',
+                  onPressed:
+                      () => _loginForClubCreation(context, setDialogState),
+                  isLoading: _isLoggingIn,
+                  gradient: AppTheme.primaryGradient,
+                  icon: Icons.login,
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Login for existing users who want to create a club
+  // Uses API service directly to bypass standard auth flow
+  Future<void> _loginForClubCreation(
+    BuildContext context,
+    StateSetter setDialogState,
+  ) async {
+    if (_loginFormKey.currentState!.validate()) {
+      setDialogState(() {
+        _isLoggingIn = true;
+      });
+
+      try {
+        final email = _loginEmailController.text.trim();
+        final password = _loginPasswordController.text;
+
+        // Get API service directly without going through auth provider
+        final apiService = ref.read(apiServiceProvider);
+        
+        // Perform direct API call to login
+        final authResponse = await apiService.login(email, password);
+        
+        // Close the dialog
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+
+        // Navigate directly to club creation screen with the user
+        if (mounted) {
+          // Push directly to register club screen, bypassing any auth watchers
+          // We use pushAndRemoveUntil to clear navigation history
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => RegisterClubScreen(newUser: authResponse.user),
+            ),
+            (route) => false, // Remove all previous routes
+          );
+        }
+      } catch (e) {
+        // Handle login errors
+        if (mounted) {
+          // Extract clean error message
+          String errorMessage = e.toString();
+          if (errorMessage.startsWith('Exception: ')) {
+            errorMessage = errorMessage.substring('Exception: '.length);
+          }
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Login failed: $errorMessage'),
+              backgroundColor: AppTheme.errorColor,
+            ),
+          );
+          
+          // Reset loading state in dialog
+          setDialogState(() {
+            _isLoggingIn = false;
+          });
+        }
+      }
+    }
   }
 }

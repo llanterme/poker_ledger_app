@@ -227,14 +227,18 @@ class ApiService {
         return [];
       }
 
-      return (response.data as List).map((clubUser) => User(
-            id: clubUser['userId'] as int?, // Use userId instead of id
-            firstName: clubUser['firstName'] as String? ?? '',
-            lastName: clubUser['lastName'] as String? ?? '',
-            email: clubUser['email'] as String? ?? '',
-            isAdmin: clubUser['isAdmin'] as bool? ?? false,
-            isClubOwner: clubUser['isClubOwner'] as bool? ?? false,
-          )).toList();
+      return (response.data as List)
+          .map(
+            (clubUser) => User(
+              id: clubUser['userId'] as int?, // Use userId instead of id
+              firstName: clubUser['firstName'] as String? ?? '',
+              lastName: clubUser['lastName'] as String? ?? '',
+              email: clubUser['email'] as String? ?? '',
+              isAdmin: clubUser['isAdmin'] as bool? ?? false,
+              isClubOwner: clubUser['isClubOwner'] as bool? ?? false,
+            ),
+          )
+          .toList();
     } catch (e) {
       _handleApiError(e, 'Failed to get club users');
       return [];
