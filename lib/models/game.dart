@@ -15,6 +15,7 @@ enum GameStatus {
 class Game extends Equatable {
   final int? id;
   final int createdBy;
+  final int clubId;
   
   @JsonKey(name: 'createdByName')
   final String? createdByName;
@@ -28,6 +29,7 @@ class Game extends Equatable {
   const Game({
     this.id,
     required this.createdBy,
+    required this.clubId,
     this.createdByName,
     this.createdAt,
     this.status = GameStatus.open,
@@ -40,6 +42,7 @@ class Game extends Equatable {
   Game copyWith({
     int? id,
     int? createdBy,
+    int? clubId,
     String? createdByName,
     DateTime? createdAt,
     GameStatus? status,
@@ -47,6 +50,7 @@ class Game extends Equatable {
     return Game(
       id: id ?? this.id,
       createdBy: createdBy ?? this.createdBy,
+      clubId: clubId ?? this.clubId,
       createdByName: createdByName ?? this.createdByName,
       createdAt: createdAt ?? this.createdAt,
       status: status ?? this.status,
@@ -54,5 +58,5 @@ class Game extends Equatable {
   }
   
   @override
-  List<Object?> get props => [id, createdBy, createdByName, createdAt, status];
+  List<Object?> get props => [id, createdBy, clubId, createdByName, createdAt, status];
 }

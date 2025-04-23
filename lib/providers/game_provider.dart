@@ -65,11 +65,11 @@ class GamesNotifier extends StateNotifier<GamesState> {
 
   GamesNotifier(this._apiService) : super(GamesState());
 
-  Future<void> loadGames() async {
+  Future<void> loadGames({int? clubId}) async {
     state = state.copyWith(isLoading: true);
 
     try {
-      final games = await _apiService.getAllGames();
+      final games = await _apiService.getGames(clubId: clubId);
       state = state.copyWith(isLoading: false, games: games);
     } catch (e) {
       state = state.copyWith(
@@ -79,11 +79,11 @@ class GamesNotifier extends StateNotifier<GamesState> {
     }
   }
 
-  Future<void> loadOpenGames() async {
+  Future<void> loadOpenGames({int? clubId}) async {
     state = state.copyWith(isLoading: true);
 
     try {
-      final games = await _apiService.getGamesByStatus(GameStatus.open);
+      final games = await _apiService.getGamesByStatus(GameStatus.open, clubId: clubId);
       state = state.copyWith(isLoading: false, games: games);
     } catch (e) {
       state = state.copyWith(
@@ -93,11 +93,11 @@ class GamesNotifier extends StateNotifier<GamesState> {
     }
   }
 
-  Future<Game?> createGame(int userId) async {
+  Future<Game?> createGame(int userId, int clubId) async {
     state = state.copyWith(isLoading: true);
 
     try {
-      final game = await _apiService.createGame(userId);
+      final game = await _apiService.createGame(userId, clubId);
 
       // Update games list
       final updatedGames = [...state.games, game];

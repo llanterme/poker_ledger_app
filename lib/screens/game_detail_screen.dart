@@ -5,6 +5,7 @@ import 'package:poker_ledger/models/game.dart';
 import 'package:poker_ledger/models/transaction.dart';
 import 'package:poker_ledger/models/user.dart';
 import 'package:poker_ledger/providers/auth_provider.dart';
+import 'package:poker_ledger/providers/club_provider.dart';
 import 'package:poker_ledger/providers/game_provider.dart';
 import 'package:poker_ledger/screens/add_player_screen.dart';
 import 'package:poker_ledger/screens/add_transaction_screen.dart';
@@ -179,7 +180,10 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         );
 
         // Refresh games list and navigate back to home screen
-        await ref.read(gamesProvider.notifier).loadGames();
+        final clubState = ref.read(clubStateProvider);
+        if (clubState.currentClub != null) {
+          await ref.read(gamesProvider.notifier).loadGames(clubId: clubState.currentClub!.id);
+        }
         Navigator.of(context).pop();
       }
     } catch (e) {

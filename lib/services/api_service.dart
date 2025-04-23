@@ -1,18 +1,47 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:poker_ledger/models/auth.dart';
+import 'package:poker_ledger/models/club.dart';
 import 'package:poker_ledger/models/game.dart';
 import 'package:poker_ledger/models/game_summary.dart';
 import 'package:poker_ledger/models/game_user.dart';
 import 'package:poker_ledger/models/transaction.dart';
 import 'package:poker_ledger/models/user.dart';
+import 'package:poker_ledger/models/user_club.dart';
 import 'package:poker_ledger/services/auth_service.dart';
 
 class ApiService {
   final Dio _dio = Dio();
   final String _baseUrl = 'http://localhost:8080/api';
+  // We keep the AuthService as a dependency for future authentication needs
+  final AuthService _authService;
 
-  ApiService(AuthService authService) {}
+  ApiService(this._authService) {
+    // Initialize authentication if needed in the future
+  }
+
+  // Helper method to handle API errors consistently
+  void _handleApiError(dynamic e, String fallbackMessage) {
+    debugPrint('API error: $e');
+
+    if (e is DioException) {
+      debugPrint('DioException response: ${e.response?.data}');
+
+      if (e.response != null && e.response!.data != null) {
+        final errorData = e.response!.data;
+
+        if (errorData is Map && errorData.containsKey('message')) {
+          throw Exception(errorData['message']);
+        }
+      }
+
+      throw Exception(
+        '$fallbackMessage. Please check your connection and try again.',
+      );
+    }
+
+    throw Exception('$fallbackMessage. An unexpected error occurred.');
+  }
 
   // Authentication
   Future<AuthResponse> login(String email, String password) async {
@@ -27,17 +56,43 @@ class ApiService {
         throw Exception('Invalid response from server');
       }
 
-      // Create a user object directly since we're not using the backend auth
-      // This is a temporary solution until the backend auth is implemented
+      // Parse the response data
+      // This would normally come from the backend, but we're simulating it for now
+      final userData = response.data as Map<String, dynamic>;
+
+      // Create a user object from the response data
       final user = User(
-        id: 1,
-        firstName: 'Admin',
-        lastName: 'User',
+        id: userData['userId'] ?? 1,
+        firstName: userData['firstName'] ?? 'Admin',
+        lastName: userData['lastName'] ?? 'User',
         email: email,
-        isAdmin: true,
+        isAdmin: userData['isAdmin'] ?? true,
       );
 
-      return AuthResponse(user: user);
+      // Parse clubs data if available
+      List<UserClub> clubs = [];
+      if (userData.containsKey('clubs') && userData['clubs'] is List) {
+        clubs =
+            (userData['clubs'] as List)
+                .map(
+                  (clubData) => UserClub(
+                    id: clubData['id'],
+                    clubName: clubData['clubName'],
+                    isAdmin: clubData['isAdmin'] ?? false,
+                    isClubOwner: clubData['isClubOwner'] ?? false,
+                  ),
+                )
+                .toList();
+      }
+
+      // Store the user in the auth service for future reference
+      await _authService.saveUser(user);
+
+      return AuthResponse(
+        user: user,
+        clubs: clubs,
+        message: userData['message'],
+      );
     } catch (e) {
       debugPrint('Login error: $e');
 
@@ -69,6 +124,191 @@ class ApiService {
     }
   }
 
+  // User Registration
+  Future<User> createUser(User user, {int? clubId}) async {
+    try {
+      // Create a map from the user object
+      final userData = user.toJson();
+
+      // Add clubId if provided
+      if (clubId != null) {
+        userData['clubId'] = clubId;
+      }
+
+      final response = await _dio.post('$_baseUrl/users', data: userData);
+
+      if (response.data == null) {
+        throw Exception('Invalid response from server');
+      }
+
+      return User.fromJson(response.data);
+    } catch (e) {
+      _handleApiError(e, 'Failed to create user');
+      rethrow;
+    }
+  }
+
+  // Club Registration
+  Future<Club> createClub(String clubName, int creatorUserId) async {
+    try {
+      final response = await _dio.post(
+        '$_baseUrl/clubs',
+        queryParameters: {'creatorUserId': creatorUserId},
+        data: {'clubName': clubName},
+      );
+
+      if (response.data == null) {
+        throw Exception('Invalid response from server');
+      }
+
+      return Club.fromJson(response.data);
+    } catch (e) {
+      _handleApiError(e, 'Failed to create club');
+      rethrow;
+    }
+  }
+
+  // Club Management
+  Future<List<Club>> getClubs() async {
+    try {
+      final response = await _dio.get('$_baseUrl/clubs');
+
+      if (response.data == null) {
+        return [];
+      }
+
+      return (response.data as List)
+          .map((club) => Club.fromJson(club))
+          .toList();
+    } catch (e) {
+      _handleApiError(e, 'Failed to get clubs');
+      return [];
+    }
+  }
+
+  Future<Club> getClubById(int clubId) async {
+    try {
+      final response = await _dio.get('$_baseUrl/clubs/$clubId');
+
+      if (response.data == null) {
+        throw Exception('Invalid response from server');
+      }
+
+      return Club.fromJson(response.data);
+    } catch (e) {
+      _handleApiError(e, 'Failed to get club');
+      rethrow;
+    }
+  }
+
+  Future<List<Club>> getClubsByUserId(int userId) async {
+    try {
+      final response = await _dio.get('$_baseUrl/clubs/user/$userId');
+
+      if (response.data == null) {
+        return [];
+      }
+
+      return (response.data as List)
+          .map((club) => Club.fromJson(club))
+          .toList();
+    } catch (e) {
+      _handleApiError(e, 'Failed to get user clubs');
+      return [];
+    }
+  }
+
+  // Club Users Management
+  Future<List<User>> getUsersByClubId(int clubId) async {
+    try {
+      final response = await _dio.get('$_baseUrl/club-users/club/$clubId');
+
+      if (response.data == null) {
+        return [];
+      }
+
+      return (response.data as List)
+          .map(
+            (clubUser) => User(
+              id: clubUser['userId'] as int?, // Use userId instead of id
+              firstName: clubUser['firstName'] as String? ?? '',
+              lastName: clubUser['lastName'] as String? ?? '',
+              email: clubUser['email'] as String? ?? '',
+              isAdmin: clubUser['isAdmin'] as bool? ?? false,
+              isClubOwner: clubUser['isClubOwner'] as bool? ?? false,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      _handleApiError(e, 'Failed to get club users');
+      return [];
+    }
+  }
+
+  Future<void> associateUserWithClub(
+    int clubId,
+    String email,
+    bool isAdmin,
+    bool isClubOwner,
+  ) async {
+    try {
+      await _dio.post(
+        '$_baseUrl/club-users',
+        data: {
+          'clubId': clubId,
+          'email': email,
+          'isAdmin': isAdmin,
+          'isClubOwner': isClubOwner,
+        },
+      );
+    } catch (e) {
+      _handleApiError(e, 'Failed to associate user with club');
+      rethrow;
+    }
+  }
+
+  Future<bool> checkIfUserIsInClub(int userId, int clubId) async {
+    try {
+      final response = await _dio.get(
+        '$_baseUrl/club-users/check',
+        queryParameters: {'userId': userId, 'clubId': clubId},
+      );
+
+      return response.data == true;
+    } catch (e) {
+      _handleApiError(e, 'Failed to check if user is in club');
+      return false;
+    }
+  }
+
+  Future<bool> checkIfUserIsAdminInClub(int userId, int clubId) async {
+    try {
+      final response = await _dio.get(
+        '$_baseUrl/club-users/check/admin',
+        queryParameters: {'userId': userId, 'clubId': clubId},
+      );
+
+      return response.data == true;
+    } catch (e) {
+      _handleApiError(e, 'Failed to check if user is admin in club');
+      return false;
+    }
+  }
+
+  Future<bool> checkIfUserIsOwnerOfClub(int userId, int clubId) async {
+    try {
+      final response = await _dio.get(
+        '$_baseUrl/club-users/check/owner',
+        queryParameters: {'userId': userId, 'clubId': clubId},
+      );
+
+      return response.data == true;
+    } catch (e) {
+      _handleApiError(e, 'Failed to check if user is owner of club');
+      return false;
+    }
+  }
+
   // Users
   Future<List<User>> getAllUsers() async {
     try {
@@ -92,7 +332,7 @@ class ApiService {
     }
   }
 
-  Future<User> createUser(User user) async {
+  Future<User> registerUserLegacy(User user) async {
     try {
       final response = await _dio.post('$_baseUrl/users', data: user.toJson());
       return User.fromJson(response.data);
@@ -102,51 +342,79 @@ class ApiService {
     }
   }
 
-  // Games
-  Future<List<Game>> getAllGames() async {
+  // Game Management
+  Future<List<Game>> getGames({int? clubId}) async {
     try {
-      final response = await _dio.get('$_baseUrl/games');
+      final String url =
+          clubId != null ? '$_baseUrl/games/club/$clubId' : '$_baseUrl/games';
+
+      final response = await _dio.get(url);
+
+      if (response.data == null) {
+        return [];
+      }
+
       return (response.data as List)
-          .map((json) => Game.fromJson(json))
+          .map((game) => Game.fromJson(game))
           .toList();
     } catch (e) {
-      debugPrint('Get all games error: $e');
-      rethrow;
+      _handleApiError(e, 'Failed to get games');
+      return [];
     }
   }
 
   Future<Game> getGameById(int gameId) async {
     try {
       final response = await _dio.get('$_baseUrl/games/$gameId');
+
+      if (response.data == null) {
+        throw Exception('Invalid response from server');
+      }
+
       return Game.fromJson(response.data);
     } catch (e) {
-      debugPrint('Get game by ID error: $e');
+      _handleApiError(e, 'Failed to get game');
       rethrow;
     }
   }
 
-  Future<List<Game>> getGamesByStatus(GameStatus status) async {
+  Future<List<Game>> getGamesByStatus(GameStatus status, {int? clubId}) async {
     try {
-      final statusString = status.toString().split('.').last.toUpperCase();
-      final response = await _dio.get('$_baseUrl/games/status/$statusString');
+      final statusStr = status.toString().split('.').last.toUpperCase();
+      final String url =
+          clubId != null
+              ? '$_baseUrl/games/club/$clubId/status/$statusStr'
+              : '$_baseUrl/games/status/$statusStr';
+
+      final response = await _dio.get(url);
+
+      if (response.data == null) {
+        return [];
+      }
+
       return (response.data as List)
-          .map((json) => Game.fromJson(json))
+          .map((game) => Game.fromJson(game))
           .toList();
     } catch (e) {
-      debugPrint('Get games by status error: $e');
-      rethrow;
+      _handleApiError(e, 'Failed to get games by status');
+      return [];
     }
   }
 
-  Future<Game> createGame(int createdBy) async {
+  Future<Game> createGame(int userId, int clubId) async {
     try {
       final response = await _dio.post(
         '$_baseUrl/games',
-        data: {'createdBy': createdBy},
+        data: {'createdBy': userId, 'clubId': clubId},
       );
+
+      if (response.data == null) {
+        throw Exception('Invalid response from server');
+      }
+
       return Game.fromJson(response.data);
     } catch (e) {
-      debugPrint('Create game error: $e');
+      _handleApiError(e, 'Failed to create game');
       rethrow;
     }
   }
