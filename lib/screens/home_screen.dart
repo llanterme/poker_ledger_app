@@ -5,6 +5,7 @@ import 'package:poker_ledger/models/user_club.dart';
 import 'package:poker_ledger/providers/auth_provider.dart';
 import 'package:poker_ledger/providers/club_provider.dart';
 import 'package:poker_ledger/providers/game_provider.dart';
+import 'package:poker_ledger/screens/club_users_screen.dart';
 import 'package:poker_ledger/screens/game_detail_screen.dart';
 import 'package:poker_ledger/screens/login_screen.dart';
 import 'package:poker_ledger/screens/new_game_screen.dart';
@@ -81,6 +82,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       MaterialPageRoute(builder: (context) => const RegisterClubUserScreen()),
     );
   }
+  
+  void _navigateToClubUsers() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const ClubUsersScreen()),
+    );
+  }
 
   Widget _buildDrawer(AuthState authState, bool isAdmin) {
     final clubState = ref.watch(clubStateProvider);
@@ -143,6 +150,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 onTap: () {
                   Navigator.pop(context); // Close drawer
                   _navigateToRegisterClubUser();
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.people,
+                  color: AppTheme.secondaryColor,
+                ),
+                title: const Text('Club Users'),
+                onTap: () {
+                  Navigator.pop(context); // Close drawer
+                  _navigateToClubUsers();
                 },
               ),
               ListTile(

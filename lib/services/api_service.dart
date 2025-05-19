@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poker_ledger/models/auth.dart';
 import 'package:poker_ledger/models/club.dart';
+import 'package:poker_ledger/models/club_user.dart';
 import 'package:poker_ledger/models/game.dart';
 import 'package:poker_ledger/models/game_summary.dart';
 import 'package:poker_ledger/models/game_user.dart';
@@ -12,7 +13,8 @@ import 'package:poker_ledger/services/auth_service.dart';
 
 class ApiService {
   final Dio _dio = Dio();
-  final String _baseUrl = 'http://localhost:8080/api';
+  final String _baseUrl =
+      'payment-cluster-load-balancer-1798404675.eu-west-2.elb.amazonaws.com:9001/api/api';
   // We keep the AuthService as a dependency for future authentication needs
   final AuthService _authService;
 
@@ -501,6 +503,24 @@ class ApiService {
     } catch (e) {
       debugPrint('Get game summary error: $e');
       rethrow;
+    }
+  }
+
+  // Club Users
+  Future<List<ClubUser>> getClubUsers(int clubId) async {
+    try {
+      final response = await _dio.get('$_baseUrl/club-users/club/$clubId');
+
+      if (response.data == null) {
+        return [];
+      }
+
+      return (response.data as List)
+          .map((json) => ClubUser.fromJson(json))
+          .toList();
+    } catch (e) {
+      _handleApiError(e, 'Failed to load club users');
+      return [];
     }
   }
 }
